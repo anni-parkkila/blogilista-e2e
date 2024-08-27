@@ -1,17 +1,17 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
-const { loginWith } = require('./helper')
+const { loginWith, addBlog } = require('./helper')
 
 describe('Bloglist app', () => {
   beforeEach(async ({ page, request }) => {
-    await request.post('http:localhost:3003/api/testing/reset')
-    await request.post('http://localhost:3003/api/users', {
+    await request.post('/api/testing/reset')
+    await request.post('/api/users', {
       data: {
         name: 'Sherlock Holmes',
         username: 'holmes',
         password: 'baskerville'
       }
     })
-    await page.goto('http://localhost:5173')
+    await page.goto('/')
   })
 
   test('Login form is shown', async ({ page }) => {
@@ -34,6 +34,17 @@ describe('Bloglist app', () => {
       await expect(errorDiv).toContainText('ERROR: Wrong username or password')
       await expect(errorDiv).toHaveCSS('border-style', 'solid')
       await expect(errorDiv).toHaveCSS('color', 'rgb(143, 46, 46)')
+    })
+  })
+
+  describe('When logged in', () => {
+    beforeEach(async ({ page }) => {
+      await loginWith(page, 'holmes', 'baskerville')
+    })
+
+    test('a new blog can be added', async ({ page }) => {
+      await addBlog(page, 'Adventures of Sherlock Holmes', 'John H. Watson', 'b221.co.uk')
+      await expect(page.getByText('Adventures of Sherlock Holmes by John H. Watson')).toBeVisible()
     })
   })
 })
