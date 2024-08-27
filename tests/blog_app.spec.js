@@ -54,5 +54,23 @@ describe('Bloglist app', () => {
       await page.getByRole('button', { name: 'like' }).click()
       await expect(page.getByText('Likes: 1')).toBeVisible()
     })
+
+    test('user can delete a blog if it was added by them', async ({ page }) => {
+      await addBlog(page, 'Adventures of Sherlock Holmes', 'John H. Watson', 'b221.co.uk')
+      await page.getByRole('button', { name: 'view' }).click()
+      await expect(page.getByText('Added by: Sherlock Holmes')).toBeVisible()
+
+      page.on('dialog', async dialog => {
+        console.log('Dialog: ', dialog.message());
+        await dialog.accept();
+      });
+      await page.getByRole('button', { name: 'delete' }).click()
+
+      const successDiv = await page.locator('.success')
+      await expect(successDiv).toContainText('Blog "Adventures of Sherlock Holmes" was removed')
+      await expect(successDiv).toHaveCSS('border-style', 'solid')
+      await expect(successDiv).toHaveCSS('color', 'rgb(50, 124, 96)')
+      await expect(page.getByText('Added by: Sherlock Holmes')).not.toBeVisible()
+    })
   })
 })
