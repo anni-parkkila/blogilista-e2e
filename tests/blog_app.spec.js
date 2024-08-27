@@ -46,5 +46,13 @@ describe('Bloglist app', () => {
       await addBlog(page, 'Adventures of Sherlock Holmes', 'John H. Watson', 'b221.co.uk')
       await expect(page.getByText('Adventures of Sherlock Holmes by John H. Watson')).toBeVisible()
     })
+
+    test('a blog can be liked', async ({ page }) => {
+      await addBlog(page, 'Adventures of Sherlock Holmes', 'John H. Watson', 'b221.co.uk')
+      await page.getByRole('button', { name: 'view' }).click()
+      await expect(page.getByText('Likes: 0')).toBeVisible()
+      await page.getByRole('button', { name: 'like' }).click()
+      await expect(page.getByText('Likes: 1')).toBeVisible()
+    })
   })
 })
