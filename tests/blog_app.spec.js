@@ -93,5 +93,30 @@ describe('Bloglist app', () => {
       await page.getByRole('button', { name: 'view' }).click()
       await expect(page.getByRole('button', { name: 'delete' })).not.toBeVisible()
     })
+
+    test('blogs are ordered by the number of likes', async ({ page }) => {
+      await addBlog(page, 'Adventures of Sherlock Holmes', 'John H. Watson', 'b221.co.uk')
+      await addBlog(page, 'How to be a secret agent', 'James Bond', 'jamesbond.co.uk')
+      await expect(page.getByText('Adventures of Sherlock Holmes by John H. Watson')).toBeVisible()
+
+      const secondBlog = await page.getByText('How to be a secret agent by James Bond')
+      await expect(secondBlog).toBeVisible()
+      const secondElement = await secondBlog.locator('..')
+
+      await secondElement.getByRole('button', { name: 'view' }).click()
+      await expect(page.getByText('Likes: 0')).toBeVisible()
+      await page.getByRole('button', { name: 'like' }).click()
+      await expect(page.getByText('Likes: 1')).toBeVisible()
+
+      await page.getByRole('button', { name: 'view' }).click()
+
+      const firstBlog = page.getByRole('button', { name: 'hide' }).first().locator('..')
+      await expect(firstBlog.getByText('How to be a secret agent by James Bond')).toBeVisible()
+      await expect(firstBlog.getByText('Likes: 1')).toBeVisible()
+
+      const lastBlog = page.getByRole('button', { name: 'hide' }).last().locator('..')
+      await expect(lastBlog.getByText('Adventures of Sherlock Holmes by John H. Watson')).toBeVisible()
+      await expect(lastBlog.getByText('Likes: 0')).toBeVisible()
+    })
   })
 })
