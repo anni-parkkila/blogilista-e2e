@@ -11,6 +11,13 @@ describe('Bloglist app', () => {
         password: 'baskerville'
       }
     })
+    await request.post('/api/users', {
+      data: {
+        name: 'James Bond',
+        username: 'bond007',
+        password: 'skyfall'
+      }
+    })
     await page.goto('/')
   })
 
@@ -71,6 +78,20 @@ describe('Bloglist app', () => {
       await expect(successDiv).toHaveCSS('border-style', 'solid')
       await expect(successDiv).toHaveCSS('color', 'rgb(50, 124, 96)')
       await expect(page.getByText('Added by: Sherlock Holmes')).not.toBeVisible()
+    })
+
+    test('user cannot see the delete button for blogs they did not add', async ({ page }) => {
+      await addBlog(page, 'Adventures of Sherlock Holmes', 'John H. Watson', 'b221.co.uk')
+      await expect(page.getByText('Adventures of Sherlock Holmes by John H. Watson')).toBeVisible()
+      await page.getByRole('button', { name: 'logout' }).click()
+
+      await expect(page.getByText('Log in to application')).toBeVisible()
+      await loginWith(page, 'bond007', 'skyfall')
+      await expect(page.getByText('James Bond logged in')).toBeVisible()
+
+      await expect(page.getByText('Adventures of Sherlock Holmes by John H. Watson')).toBeVisible()
+      await page.getByRole('button', { name: 'view' }).click()
+      await expect(page.getByRole('button', { name: 'delete' })).not.toBeVisible()
     })
   })
 })
